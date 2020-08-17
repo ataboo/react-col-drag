@@ -1,42 +1,23 @@
 import React, {useRef} from 'react';
 import './column.scss';
 import { Card } from './card';
+import DropZone from './drop-zone/drop-zone';
 import { useDrop } from 'react-dnd';
 
-const renderCards = (cards) => cards.map(c => (<Card key={c.id} id={c.id} name={c.name} moveCards={moveCards}/>));
+const renderCards = (cards, name, moveCards) => {
+    if (cards.length == 0) {
+        return (<DropZone name={name + " dropzone"}/>)
+    }
 
-const moveCards = (dragged, dropped) => {
-    console.log("Dragging "+dragged.key+" to "+dropped.key);
+    return cards.map(c => (<Card key={c.id} id={c.id} name={c.name} moveCards={moveCards}/>))
 };
 
-function Column({cards, name, id}) {
-    const [{isOver, canDrop}, drop] = useDrop({
-        accept: "card",
-        drop: () => ({name: name}),
-        // hover: (item, monitor) => {
-        //     if(!ref.current) {
-        //         return;
-        //     }
-
-        //     isOver = monitor.isOver()
-        // }
-        // hover: (item, monitor) => {
-        //     if (!ref.current) {
-        //         return
-        //     }
-            
-        //     console.log(item.key);
-        // }
-        // collect: (monitor) => ({
-        //     isOver: monitor.isOver(),
-        //     canDrop: monitor.canDrop()
-        // })
-    })
-
+function Column({cards, name, moveCards}) {
+    const [, drop] = useDrop({ accept: 'card' })
     return (
-    <div ref={node => drop(node)} className="drag-column" style={isOver ? {background: 'green'} : {background: 'red'}}>
-        <div>{name}</div>
-        {renderCards(cards)}
+    <div ref={drop} className="drag-column" style={{background: 'blue'}}>
+        <div>{name} - {cards.length}</div>
+        {renderCards(cards, name, moveCards)}
     </div>)
 }
 
