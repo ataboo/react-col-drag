@@ -1,109 +1,100 @@
 import React, { useState } from 'react';
 import './app.scss';
 import Column from '../column';
-import {DndProvider} from 'react-dnd';
-import {HTML5Backend} from 'react-dnd-html5-backend';
-import update from "immutability-helper";
+import CardService from '../../service/card-service';
 
 function App() {
-  const [columnData, setColData] = useState([
-    {
-      name: "column 1",
-      id: "1",
-      cards: [
-        {
-          id: "1",
-          name: "card a"
-        },
-        {
-          id: "2",
-          name: "card b"
-        }
-      ]
-    },
-    {
-      name: "column 2",
-      id: "2",
-      cards: [
-        {
-          id: "3",
-          name: "card c"
-        },
-        {
-          id: "4",
-          name: "card d"
-        }
-      ]
-    },
-    {
-      name: "column 3",
-      id: "3",
-      cards: []
-    }
-  ]);
-
-  const moveCards = (draggedId, droppedId) => {
-    let droppedCardIdx = -1;
-    let droppedColIdx = -1;
-    let draggedCardIdx = -1;
-    let draggedColIdx = -1;
-  
-    for(let i=0; i<columnData.length; i++) {
-      if (droppedColIdx < 0 || draggedColIdx < 0) {
-        for(let j=0; j<columnData[i].cards.length; j++) {
-          if (columnData[i].cards[j].id == droppedId) {
-            droppedColIdx = i;
-            droppedCardIdx = j;
-            continue;
-          }
-
-          if (columnData[i].cards[j].id == draggedId) {
-            draggedColIdx = i;
-            draggedCardIdx = j;
-            continue;
-          }
-        }
+  const [cardData, setCardData] = useState({
+    cards: [
+      {
+        id: "1",
+        name: "card a",
+        statusId: "1",
+        ordinal: 0
+      },
+      {
+        id: "2",
+        name: "card b",
+        statusId: "1",
+        ordinal: 1
+      },
+      {
+        id: "3",
+        name: "card c",
+        statusId: "2",
+        ordinal: 0
+      },
+      {
+        id: "4",
+        name: "card d",
+        statusId: "2",
+        ordinal: 1
+      },
+      {
+        id: "5",
+        name: "card e",
+        statusId: "2",
+        ordinal: 2
+      },
+      {
+        id: "6",
+        name: "card f",
+        statusId: "2",
+        ordinal: 3
       }
-    }
-
-    if (droppedColIdx < 0 || draggedColIdx < 0) {
-      console.error("Failed to get column");
-      return;
-    }
-
-    console.log(`running move: drag: ${draggedId}|${draggedCardIdx}, drop: ${droppedId}|${droppedCardIdx}`);
-
-    setColData((oldColData) => {
-      var clone = [...oldColData];
-      if (draggedColIdx != droppedColIdx) {
-        let draggedCard = clone[draggedColIdx].cards.splice(draggedColIdx, 1)[0];
-        clone[droppedColIdx].cards.splice(droppedColIdx, 0, draggedCard);
-      } else {
-        // console.log(`idx before: ${clone[draggedColIdx].cards[0].id}, ${clone[draggedColIdx].cards[1].id}`)
-
-        let temp = clone[draggedColIdx].cards[draggedCardIdx];
-        clone[draggedColIdx].cards[draggedCardIdx] = clone[draggedColIdx].cards[droppedCardIdx];
-        clone[draggedColIdx].cards[droppedCardIdx] = temp;
-
-        // console.log(`idx after: ${clone[draggedColIdx].cards[0].id}, ${clone[draggedColIdx].cards[1].id}`)
+    ],
+    statuses: [
+      {
+        id: "1",
+        name: "back-burner"
+      },
+      {
+        id: "2",
+        name: "front-burner"
       }
-      console.dir(clone[draggedColIdx].cards);
+    ]
+  });
 
-      return clone;
+  const moveCardToStatus = (draggedId, statusId) => {
+    setCardData((oldCardData) => {
+      CardService.moveCardToStatus(oldCardData, draggedId, statusId)
+
+      return {
+        cards: [...oldCardData.cards],
+        statuses: [...oldCardData.statuses]
+      };
+    })
+  }
+
+  const moveCards = (draggedId, statusId, ordinal) => {
+    setCardData((oldCardData) => {
+      CardService.swapCards(oldCardData, draggedId, statusId, ordinal)
+
+      return {
+        cards: [...oldCardData.cards],
+        statuses: [...oldCardData.statuses]
+      };
     });
   };
 
   const renderColumns = () => {
-    return columnData.map(col => (<Column id={col.id} key={col.id} cards={col.cards} name={col.name} moveCards={moveCards} />));
+    let sortedCards = (statusId) => cardData.cards.filter(c => c.statusId === statusId).sort((a, b) => a.ordinal - b.ordinal);
+
+    return cardData.statuses.map((status, i) => (<Column 
+      key={status.id} 
+      cards={sortedCards(status.id)} 
+      status={status} 
+      moveCards={moveCards} 
+      moveCardToStatus={moveCardToStatus}
+    />))
+
   }
 
   return (
     <div className="App">
-      <DndProvider backend={HTML5Backend}>
         <div className="col-container">  
           {renderColumns()}
         </div>
-      </DndProvider>
     </div>
   );
 }

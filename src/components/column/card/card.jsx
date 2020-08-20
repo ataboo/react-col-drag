@@ -1,43 +1,41 @@
-import React, {useRef} from 'react';
+import React from 'react';
 import './card.scss';
-import {useDrag, useDrop} from 'react-dnd';
 
-export const Card = ({name, id, moveCards}) => {
-    const [{ isDragging }, drag] = useDrag({
-        item: { name, type: "card", id: id },
-        // end: (item, monitor) => {
-        //     const dropResult = monitor.getDropResult()
-        //     // if (item && dropResult) {
-        //     //   alert(`You dropped ${item.name} into ${dropResult.name}!`)
-        //     // }
-        // },
-        end: (dropResult, monitor) => {
-            const { id: droppedId, originalIndex } = monitor.getItem()
-            const didDrop = monitor.didDrop()
-            if (!didDrop) {
-              moveCards(droppedId, id)
-            }
-        },
+export const Card = ({name, id, statusId, ordinal, moveCards}) => {
+    //until dragend event is fixed in firefox
+    const getOpacity = () => localStorage.getItem("draggedCardId") === id ? 0.2 : 1;
+    const elementRef = React.useRef(null);
+    
+    function onDragStart(event, {id}) {
+        elementRef.current.addEventListener('dragend', onDragEnd, false);
+        event.dataTransfer.dropEffect = 'move';
 
-        collect: (monitor) => ({
-            isDragging: monitor.isDragging(),
-        }),
-    })
+        localStorage.setItem('draggedCardId', id);
+    }
 
-    const[_, drop] = useDrop({
-        accept: "card",
-        canDrop: () => false,
-        drop: () => ({id: id, name: name}),
-        hover({id: draggedId}){
-            if (draggedId != id) {
-                moveCards(draggedId, id);
-            }
+    function onDragHover(event) {
+        let cardId = localStorage.getItem('draggedCardId');
+        if (cardId !== id) {
+            moveCards(cardId, statusId, ordinal);
         }
-    })
 
-    const opacity = isDragging ? 0.4 : 1;
+        event.preventDefault();
+    }
 
-    return (<div className="drag-card" ref={node => drop(drag(node))} style={{opacity, userSelect: "none"}}>
-                {name}
+    function onDragEnd(event) {
+        if(elementRef.current) {
+            elementRef.current.removeEventListener('dragend', onDragEnd, false);
+        }
+    }
+
+    return (<div 
+                ref={elementRef}
+                className="drag-card draggable"
+                onDragStart = {(event) => onDragStart(event, {id: id})}
+                draggable
+                onDragOver={(event)=>onDragHover(event)}
+                style={{getOpacity, userSelect: "none"}}
+            >
+                {name} - {ordinal}
             </div>);
 };
