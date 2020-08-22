@@ -1,10 +1,9 @@
 import React from 'react';
 import './drop-zone.scss';
 
-function DropZone({status, moveCardToStatus}) {
+export function DropZone({status, moveCardToStatus, draggedCardId}) {
     const onDragOver = (event) => {
-        let cardId = localStorage.getItem('draggedCardId');
-        moveCardToStatus(cardId, status.id)
+        moveCardToStatus(draggedCardId, status.id)
     };
 
     return (
@@ -13,5 +12,3 @@ function DropZone({status, moveCardToStatus}) {
         {'Drop Zone Here'}
     </div>)
 }
-
-export default DropZone

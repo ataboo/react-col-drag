@@ -1,13 +1,13 @@
 import React from 'react';
 import './column.scss';
 import { Card } from './card';
-import DropZone from './drop-zone/drop-zone';
+import { DropZone } from './drop-zone';
 
 
-function Column({cards, status, moveCards, moveCardToStatus}) {
+export function Column({cards, status, moveCards, moveCardToStatus, draggedCardId, setDraggedCardId}) {
     const renderCards = () => {
         if (cards.length === 0) {
-            return (<DropZone status={status} moveCardToStatus={moveCardToStatus} />)
+            return (<DropZone status={status} moveCardToStatus={moveCardToStatus} draggedCardId={draggedCardId}/>)
         }
     
         return cards.map(c => (<Card 
@@ -16,7 +16,9 @@ function Column({cards, status, moveCards, moveCardToStatus}) {
             name={c.name} 
             statusId={c.statusId} 
             ordinal={c.ordinal} 
-            moveCards={moveCards} 
+            moveCards={moveCards}
+            draggedCardId={draggedCardId}
+            setDraggedCardId={setDraggedCardId}
         />))    
     }
 
@@ -28,6 +30,4 @@ function Column({cards, status, moveCards, moveCardToStatus}) {
         <div>{status.name} - {cards.length}</div>
         {renderCards()}
     </div>)
-}
-
-export default Column
+};
