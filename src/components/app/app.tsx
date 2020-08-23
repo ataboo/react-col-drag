@@ -1,6 +1,6 @@
 import React from 'react';
 import './app.scss';
-import Project from './project';
+import Project from './project/project';
 import FakeProjectService from '../../service/implementation/fake-project-service';
 
 

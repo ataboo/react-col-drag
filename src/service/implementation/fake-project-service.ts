@@ -1,6 +1,6 @@
 import { Project } from "../../models/project";
-import { ICardService as IProjectService } from "../interface/icard-service";
-import ProjectService from "./card-service";
+import { IProjectService } from "../interface/iproject-service";
+import ProjectService from "./project-service";
 
 export default class FakeProjectService implements IProjectService {
     cachedProjectData: Project
@@ -61,12 +61,15 @@ export default class FakeProjectService implements IProjectService {
             ]
         }
     }
-
-    swapTasks(project: Project, draggedTaskId: string, droppedTaskStatusId: string, droppedTaskOrdinal: number): void {
-        this.realService.swapTasks(project, draggedTaskId, droppedTaskStatusId, droppedTaskOrdinal);
+    emptyProject(): Project {
+        return this.realService.emptyProject();
     }
-    moveCardToStatus(project: Project, draggedTaskId: string, statusId: string): void {
-        this.realService.moveCardToStatus(project, draggedTaskId, statusId);
+
+    swapTasks(project: Project, draggedTaskId: string, droppedTaskStatusId: string, droppedTaskOrdinal: number): boolean {
+        return this.realService.swapTasks(project, draggedTaskId, droppedTaskStatusId, droppedTaskOrdinal);
+    }
+    moveCardToStatus(project: Project, draggedTaskId: string, statusId: string): boolean {
+        return this.realService.moveCardToStatus(project, draggedTaskId, statusId);
     }
 
     async getProjectList(): Promise<Project[]> {
@@ -79,5 +82,7 @@ export default class FakeProjectService implements IProjectService {
 
     async saveProject(project: Project): Promise<any> {
         this.cachedProjectData = project;
+
+        console.log("tadaa!");
     }
 }

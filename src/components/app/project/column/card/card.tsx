@@ -9,13 +9,14 @@ type CardProps = {
     moveCards: (draggedCardId: string, droppedStatusId: string, droppedOrdinal: number) => void,
     draggedCardId: string,
     setDraggedCardId: (draggedCardId: string) => void,
+    onDrop: () => void
 };
 
 type DragStartProps = {
     id: string
 };
 
-export const Card = ({name, id, statusId, ordinal, moveCards, draggedCardId, setDraggedCardId} : CardProps) => {
+export const Card = ({name, id, statusId, ordinal, moveCards, draggedCardId, setDraggedCardId, onDrop} : CardProps) => {
     //until dragend event is fixed in firefox
     const getOpacity = () => draggedCardId === id ? 0.2 : 1;
     const elementRef = React.useRef<HTMLDivElement>(null);
@@ -40,6 +41,8 @@ export const Card = ({name, id, statusId, ordinal, moveCards, draggedCardId, set
             elementRef.current.removeEventListener('dragend', onDragEnd, false);
         }
         setDraggedCardId("");
+
+        onDrop();
     }
 
     return (<div 

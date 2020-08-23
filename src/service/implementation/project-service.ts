@@ -1,11 +1,15 @@
 import { Project } from "../../models/project";
-import { ICardService } from "../interface/icard-service";
+import { IProjectService } from "../interface/iproject-service";
 
-export default class ProjectService implements ICardService {
-    swapTasks(project: Project, draggedTaskId: string, droppedTaskStatusId: string, droppedTaskOrdinal: number) {
+export default class ProjectService implements IProjectService {
+    swapTasks(project: Project, draggedTaskId: string, droppedTaskStatusId: string, droppedTaskOrdinal: number): boolean {
         let draggedTask = project.tasks.find(t => t.id === draggedTaskId);
         if (draggedTask === undefined) {
             throw new Error("Failed to find task: " + draggedTaskId);
+        }
+
+        if (draggedTask.ordinal === droppedTaskOrdinal && draggedTask.statusId === droppedTaskStatusId) {
+            return false;
         }
 
         let newStatusTasks = project.tasks.filter(c => c.statusId === droppedTaskStatusId && c.id !== draggedTaskId);
@@ -30,24 +34,30 @@ export default class ProjectService implements ICardService {
     
         draggedTask.ordinal = droppedTaskOrdinal;
         draggedTask.statusId = droppedTaskStatusId;
+
+        return true;
     };
 
-    moveCardToStatus(project: Project, draggedTaskId: string, statusId: string) {
+    moveCardToStatus(project: Project, draggedTaskId: string, statusId: string): boolean {
         let draggedTask = project.tasks.find(c => c.id === draggedTaskId);
         if (draggedTask === undefined) {
             throw new Error("Failed to find task: " + draggedTaskId);
         }
-        
-        if(draggedTask.statusId !== statusId) {
-            var oldStatusTasks = project.tasks.filter(c => c.statusId === draggedTask!.statusId && c.id !== draggedTaskId);
-    
-            for(let i=0; i<oldStatusTasks.length; i++) {
-                oldStatusTasks[i].ordinal = i;
-            }
-    
-            draggedTask.statusId = statusId;
-            draggedTask.ordinal = 0;
+
+        if (draggedTask.statusId === statusId) {
+            return false;
         }
+        
+        var oldStatusTasks = project.tasks.filter(c => c.statusId === draggedTask!.statusId && c.id !== draggedTaskId);
+
+        for(let i=0; i<oldStatusTasks.length; i++) {
+            oldStatusTasks[i].ordinal = i;
+        }
+
+        draggedTask.statusId = statusId;
+        draggedTask.ordinal = 0;
+        
+        return true;
     }
     
     async getProjectList(): Promise<Project[]> {
@@ -98,4 +108,13 @@ export default class ProjectService implements ICardService {
     
         return response.json();
     };
+
+    emptyProject(): Project {
+        return {
+            id: "",
+            name: "",
+            statuses: [],
+            tasks: []
+        };
+    }
 }
